@@ -90,3 +90,299 @@ By contrast, if the Engine is performing an LHS look-up and arrives at the top f
 ### Type Error
 
 if a variable is found for an RHS look-up, but you try to do something with its value that is impossible, such as trying to execute-as-function a non-function value, or reference a property on a null or undefined value, then Engine throws a different kind of error, called a TypeError.
+
+## Lexical Scope
+
+lexical scope is scope that is defined at lexing time. In other words, lexical scope is based on where variables and blocks of scope are authored, by you, at write time, and thus is (mostly) set in stone by the time the lexer processes your code.
+
+Scope consists of a series of "bubbles" that each act as a container or bucket, in which identifiers (variables, functions) are declared. These bubbles nest neatly inside each other, and this nesting is defined at author-time.
+
+```
+function foo(a) { // Bubble A - Global scope
+
+	var b = a * 2; // Bubble B - foo scope
+
+	function bar(c) {
+		console.log( a, b, c ); // Bubble C - bar scope
+	}
+
+	bar(b * 3);
+}
+
+foo( 2 ); // 2 4 12
+```
+
+Bubble 1 encompasses the global scope, and has just one identifier in it: `foo`.
+
+Bubble 2 encompasses the scope of foo, which includes the three identifiers: `a`, `bar` and `b`.
+
+Bubble 3 encompasses the scope of bar, and it includes just one identifier: `c`.
+
+In the above code snippet, the Engine executes the console.log(..) statement and goes looking for the three referenced variables `a`, `b`, and `c`. It first starts with the innermost scope bubble, the scope of the `bar(..)` function. It won't find a there, so it goes up one level, out to the next nearest scope bubble, the scope of `foo(..)`. It finds a there, and so it uses that a. Same thing for b. But c, it does find inside of `bar(..)`.
+
+No matter where a function is invoked from, or even how it is invoked, its lexical scope is only defined by where the function was declared.
+
+### Shadowing
+
+The same identifier name can be specified at multiple layers of nested scope, which is called "shadowing" (the inner identifier "shadows" the outer identifier). Regardless of shadowing, scope look-up always starts at the innermost scope being executed at the time, and works its way outward/upward until the first match, and stops.
+
+### Global variables
+
+Global variables are also automatically properties of the global object (window in browsers, etc.), so it is possible to reference a global variable not directly by its lexical name, but instead indirectly as a property reference of the global object. ex `window.a`
+
+
+## Scope From Functions
+
+Javascript has function based scope. Function scope encourages the idea that all variables belong to the function, and can be used and reused throughout the entirety of the function (and indeed, accessible even to nested scopes).
+
+
+### Hiding in plain Scope
+
+If a code is wrapped by a function, The practical result is to create a scope bubble around the code in question, which means that any declarations (variable or function) in that code will now be tied to the scope of the new wrapping function, rather than the previously enclosing scope. In other words, you can "hide" variables and functions by enclosing them in the scope of a function.
+
+### Advantages of Hiding
+
+1. Promote "Principle of Least Privilege" (principle states that in the design of software, such as the API for a module/object, you should expose only what is minimally necessary, and "hide" everything else.)
+
+2. to avoid unintended collision between two different identifiers with the same name but different intended usages. 
+
+### Global namespace to avoid collision 
+
+ Javascript libraries typically will create a single variable declaration, often an object, with a sufficiently unique name, in the global scope. This object is then used as a "namespace" for that library, where all specific exposures of functionality are made as properties of that object (namespace), rather than as top-level lexically scoped identifiers themselves.
+
+```
+var MyReallyCoolLibrary = {
+	awesome: "stuff",
+	doSomething: function() {
+		// ...
+	},
+	doAnotherThing: function() {
+		// ...
+	}
+};
+```
+
+## Function as scopes
+
+Wrapping a function over a piece of code hides the code and is useful but not a very ideal approach.
+
+Below example
+
+```
+var a = 2;
+
+function foo() { // <-- insert this
+
+	var a = 3;
+	console.log( a ); // 3
+
+} // <-- and this
+foo(); // <-- and this
+
+console.log( a ); // 2
+```
+1. Need to create a foo function which pollutes global scope
+2. Need to explicitly call foo function
+
+What if a function doesnt have a name and we need not call the function explicitly ?
+
+Javascript offers the below solution - IIFE (Immediately Invoked Function Expression)
+
+```
+ar a = 2;
+
+(function foo(){ // <-- insert this
+
+	var a = 3;
+	console.log( a ); // 3
+
+})(); // <-- and this
+
+console.log( a ); // 2
+
+```
+
+IIFE doesnt need a name but using anonymous function as below drawbacks.
+
+1.Anonymous functions have no useful name to display in stack traces, which can make debugging more difficult.
+
+2.Without a name, if the function needs to refer to itself, for recursion, etc., the deprecated arguments.callee reference is unfortunately required. Another example of needing to self-reference is when an event handler function wants to unbind itself after it fires.
+
+3.Anonymous functions omit a name that is often helpful in providing more readable/understandable code. A descriptive name helps self-document the code in question.
+
+### IIFE variant 1
+
+```
+var a = 2;
+
+(function IIFE(){
+
+	var a = 3;
+	console.log( a ); // 3
+
+})();
+
+console.log( a ); // 2
+```
+
+###  IIFE variant 2
+
+```
+var a = 2;
+
+(function IIFE( global ){
+
+	var a = 3;
+	console.log( a ); // 3
+	console.log( global.a ); // 2
+
+})( window ); // Arguments passed to IIFE
+
+console.log( a ); // 2
+```
+
+### IIFE variant 3
+
+```
+(function IIFE( def ){
+	def( window );
+})(function def( global ){
+
+	var a = 3;
+	console.log( a ); // 3
+	console.log( global.a ); // 2
+
+});
+```s
+
+## Block Scope
+
+`var` is always function scoped inside the function where it is declared. Declaring a `var` inside a for loop/ if block is block scoped to entire function. 
+
+Always declare `var` closer to where its being used.
+
+`const` and `let` are block `{}` scoped.
+
+```
+var foo = true;
+
+if (foo) {
+	{ // <-- explicit block
+		let bar = foo * 2;
+		bar = something( bar );
+		console.log( bar );
+	}
+}
+
+console.log( bar ); // ReferenceError
+```
+
+variables declared inside try and catch block are scoped inside the block.
+
+```
+try {
+	undefined(); // illegal operation to force an exception!
+}
+catch (err) {
+	console.log( err ); // works!
+}
+
+console.log( err ); // ReferenceError: `err` not found
+```
+
+## Hoisting
+
+All declarations, both variables and functions, are processed first, before any part of your code is executed.
+
+```
+a = 2;
+
+var a;
+
+console.log( a ); // 2
+```
+
+When you see var a = 2;, you probably think of that as one statement. But JavaScript actually thinks of it as two statements: var a; and a = 2;. The first statement, the declaration, is processed during the compilation phase. The second statement, the assignment, is left in place for the execution phase.
+
+Our first snippet then should be thought of as being handled like this:
+
+```
+var a;
+a = 2;
+
+console.log( a ); // 2
+```
+
+```
+console.log( a );
+
+var a = 2;
+```
+
+should be thought of as being handled like below:
+
+```
+var a;
+console.log( a );
+
+a = 2;
+```
+
+one way of thinking, sort of metaphorically, about this process, is that variable and function declarations are "moved" from where they appear in the flow of the code to the top of the code. This gives rise to the name "Hoisting".
+
+Function declarations are hoisted
+
+```
+foo();
+
+function foo() {
+	console.log( a ); // undefined
+
+	var a = 2;
+}
+```
+
+Function expressions are not hoisted
+
+```
+foo(); // not ReferenceError, but TypeError!
+
+var foo = function bar() {
+	// ...
+};
+```
+
+Function declarations are hoisted first followed by variables declarations.
+
+```
+foo(); // 1
+
+var foo;
+
+function foo() {
+	console.log( 1 );
+}
+
+foo = function() {
+	console.log( 2 );
+};
+```
+
+`1` is printed instead of `2`! This snippet is interpreted by the Engine as:
+
+```
+function foo() {
+	console.log( 1 );
+}
+
+foo(); // 1
+
+foo = function() {
+	console.log( 2 );
+};
+```
+
+
+Notice that `var foo` was the duplicate (and thus ignored) declaration, even though it came before the function `foo()...` declaration, because function declarations are hoisted before normal variables.
+
+While multiple/duplicate var declarations are effectively ignored, subsequent function declarations do override previous ones.

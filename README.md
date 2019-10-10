@@ -1,1 +1,1 @@
-# **Javascript Notes from You dont know JS book series by Kyle Simpson**
+# Javascript Notes from You Dont Know JS book series by Kyle Simpson
