@@ -8,7 +8,7 @@ One of the most fundamental paradigms of nearly all programming languages is the
 
 ## Compiler Theory
 
-Javascript is a compiled language. Its is not compiled well is advance or the results of compilation is not portable among various distributed system.the JavaScript engine performs many of the same steps, albeit in more sophisticated ways than we may commonly be aware, of any traditional language-compiler.
+Javascript is a compiled language. Its is not compiled well is advance or the results of compilation is not portable among various distributed system.the JavaScript engine performs many of the same steps.
 
 Traditional compilation process code will undergo three steps.
 
@@ -32,21 +32,21 @@ Say we have a code `var a =2` ,
 
 ### Compilation
 
-1.Compiler performs **lexing** to break it down into tokens
-2.Compiler will **parse** the tokens into a tree.
-3.In _code-generation_ phase
-a.Compiler asks Scope to see if a variable a already exists for that particular scope collection. If so, Compiler ignores this declaration and moves on. Otherwise, Compiler asks Scope to declare a new variable called a for that scope collection.
-4.Compiler then produces code for Engine to later execute, to handle the `a = 2` assignment.
+1. Compiler performs **lexing** to break it down into tokens
+2. Compiler will **parse** the tokens into a tree.
+3. In _code-generation_ phase
+a. Compiler asks Scope to see if a variable `a` already exists for that particular scope collection. If so, Compiler ignores this declaration and moves on. Otherwise, Compiler asks Scope to declare a new variable called a for that scope collection.
+4. Compiler then produces code for Engine to later execute, to handle the `a = 2` assignment.
 
 ### Execution
 
 While executing the generated code after compilation , The code Engine will first ask Scope if there is a variable called `a` accessible in the current scope collection. If so, Engine uses that variable. If not, Engine looks elsewhere
 
-The type of look-up Engine performs affects the outcome of the look-up.
+The type of look-up performed by the engine affects the outcome of the look-up.
 
 Two types of look up.
-1.Who is the target of assignment (LHS) - ex `var a = 2`
-2.Who is the source of assignment (RHS) - ex `console.log(a)`
+1. Who is the target of assignment (LHS) - ex `var a = 2`
+2. Who is the source of assignment (RHS) - ex `console.log(a)`
 
 Example:
 
