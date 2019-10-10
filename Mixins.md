@@ -150,42 +150,9 @@ But because of JavaScript's peculiarities, explicit pseudo-polymorphism (because
 
 The result of such approaches is usually more complex, harder-to-read, and harder-to-maintain code. Explicit pseudo-polymorphism should be avoided wherever possible, because the cost outweighs the benefit in most respects.
 
-Since the two objects also share references to their common functions, that means that even manual copying of functions (aka, mixins) from one object to another doesn't actually emulate the real duplication from class to instance that occurs in class-oriented languages.
+In general, faking classes in JS often sets more landmines for future coding than solving present real problems.
 
-JavaScript functions can't really be duplicated (in a standard, reliable way), so what you end up with instead is a duplicated reference to the same shared function object (functions are objects; see Chapter 3). If you modified one of the shared function objects (like ignition()) by adding properties on top of it, for instance, both Vehicle and Car would be "affected" via the shared reference.
 
-Take care only to use explicit mixins where it actually helps make more readable code, and avoid the pattern if you find it making code that's harder to trace, or if you find it creates unnecessary or unwieldy dependencies between objects.
 
-### Implicit Mixins
-
-```
-var Something = {
-	cool: function() {
-		this.greeting = "Hello World";
-		this.count = this.count ? this.count + 1 : 1;
-	}
-};
-
-Something.cool();
-Something.greeting; // "Hello World"
-Something.count; // 1
-
-var Another = {
-	cool: function() {
-		// implicit mixin of `Something` to `Another`
-		Something.cool.call( this );
-	}
-};
-
-Another.cool();
-Another.greeting; // "Hello World"
-Another.count; // 1 (not shared state with `Something`)
-```
-
-With Something.cool.call( this ), which can happen either in a "constructor" call (most common) or in a method call (shown here), we essentially "borrow" the function Something.cool() and call it in the context of Another (via its this binding; see Chapter 2) instead of Something. The end result is that the assignments that Something.cool() makes are applied against the Another object rather than the Something object.
-
-So, it is said that we "mixed in" Somethings behavior with (or into) Another.
-
-While this sort of technique seems to take useful advantage of this rebinding functionality, it is the brittle Something.cool.call( this ) call, which cannot be made into a relative (and thus more flexible) reference, that you should heed with caution. Generally, avoid such constructs where possible to keep cleaner and more maintainable code.
 
 
