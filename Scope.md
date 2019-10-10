@@ -253,7 +253,7 @@ console.log( a ); // 2
 	console.log( global.a ); // 2
 
 });
-```s
+```
 
 ## Block Scope
 
